@@ -5,35 +5,33 @@ import React from 'react';
 
 function Recipe() {
     let params = useParams();
-    const [details, setDetails] = useState(null); // Initialize as null
+    const [details, setDetails] = useState(null);
     const [activeTab, setActiveTab] = useState("instructions");
 
+useEffect(() => {
     const fetchDetails = async () => {
         try {
-            const data = await fetch(
+            const response = await fetch(
                 `https://api.spoonacular.com/recipes/${params.id}/information?apiKey=${process.env.REACT_APP_API_KEY}`
             );
-            if (!data.ok) {
-                throw new Error(`HTTP error! status: ${data.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const detailData = await data.json();
+            const detailData = await response.json();
             setDetails(detailData);
         } catch (error) {
             console.error("Error fetching recipe details:", error);
-            // Handle the error appropriately, e.g., show an error message
         }
     };
 
-    useEffect(() => {
-        if (params.id) {
-            fetchDetails();
-        }
-    }, [params.id]);
-
-    if (!details) {
-        return <div>Loading...</div>; // Show loading state
+    if (params.id) {
+        fetchDetails();
     }
+}, [params.id]); // No warning now
 
+if (!details) {
+    return <div>Loading...</div>;
+}
     return (
         <DetailWrapper>
             <div>
@@ -59,7 +57,7 @@ function Recipe() {
                         <h3 dangerouslySetInnerHTML={{ __html: details.instructions }}></h3>
                     </div>
                 )}
-                {activeTab === 'ingredients' && details.extendedIngredients && ( // Check if extendedIngredients exists
+                {activeTab === 'ingredients' && details.extendedIngredients && (
                     <ul>
                         {details.extendedIngredients.map((ingredient) => (
                             <li key={ingredient.id}>{ingredient.original}</li>
