@@ -30,7 +30,7 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
           ) : (
             <li><a href="/login">Login</a></li>
           )}
-          <li><a href="/addrecipes"></a></li>
+          <li><a href="/addrecipes">{isLoggedIn ? 'Add Recipes' : ''}</a></li>
         </ul>
       </div>
       <div className="navbar-right">
