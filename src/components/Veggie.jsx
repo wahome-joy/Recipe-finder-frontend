@@ -13,20 +13,29 @@ function Veggie() {
   }, []);
 
   const getVeggie = async () => {
-    const check = localStorage.getItem("veggie");
+    try {
+      const response = await fetch("http://127.0.0.1:5376/api/foods/Vegetarian");
+      const data = await response.json();
+      console.log("API Response:", data);
 
-    if (check) {
-      setVeggie(JSON.parse(check));
-    } else {
-      const api = await fetch(`https://api.spoonacular.com/recipes/random?apiKey=${process.env.REACT_APP_API_KEY}&number=9&tags=vegetarian`);
-      const data = await api.json();
-
-      localStorage.setItem("veggie", JSON.stringify(data.recipes));
-      setVeggie(data.recipes)
-      console.log(data.recipes);
+      if (!data || typeof data !== "object") {
+        console.error("Invalid API response:", data);
+        setVeggie([]); // Avoid crash
+        return;
+      }  
+  
+      if (Array.isArray(data)) {
+        setVeggie(data); // Directly set data without using localStorage
+      } else {
+        console.error("Unexpected API response format:", data);
+        setVeggie([]); // Prevent UI issues if response is invalid
+      }
+    } catch (error) {
+      console.error("Error fetching vegetarian recipes:", error);
+      setVeggie([]); // Prevent crashes by ensuring veggie is always an array
     }
-  }
-
+  };
+  
   return (
     <div>
       <Wrapper>
@@ -34,23 +43,28 @@ function Veggie() {
         <Splide options={{
           perPage: 3,
           arrows: false,
-          pagination: false,
+          pagination: true,
           drag: "free",
           gap: "5rem"
         }}>
-          {veggie.map((recipe) => {
-            return (
-              <SplideSlide key={recipe.id}>
-                <Card>
-                  <Link to={"/recipe/" + recipe.id}>
-                    <p>{recipe.title}</p>
-                    <img src={recipe.image} alt={recipe.title} />
+          {veggie?.length > 0 ? (
+          veggie.map((recipe) => (
+            <SplideSlide key={recipe.id}>
+              <Card>
+              {recipe.id && (
+                <Link to={`/recipe/${recipe.id}`}>
+                    <p>{recipe.name}</p>
+                    <img src={recipe.image_url} alt={recipe.name} />
                     <Gradient />
-                  </Link>
-                </Card>
-              </SplideSlide>
-            );
-          })}
+                </Link>
+              )}
+              </Card>
+            </SplideSlide>
+          ))
+        ) : (
+          <p>No vegetarian recipes available.</p>
+        )}
+
         </Splide>
       </Wrapper>
     </div>

@@ -21,9 +21,9 @@ function Searched() {
             {searchedRecipes.map((item) => {
                 return (
                     <Card key={item.id}>
-                        <Link to={"/recipe/" + item.id}>
-                            <img src={item.image} alt={item.title} />
-                            <h4>{item.title}</h4>
+                        <Link to={"/api/foods/" + item.id}>
+                            <img src={item.image_url} alt={item.name} />
+                            <h4>{item.name}</h4>
                         </Link>
                     </Card>
                 )

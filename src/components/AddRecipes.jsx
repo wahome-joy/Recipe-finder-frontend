@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+// import { data } from 'react-router-dom';
 
 const AddRecipes = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     ingredients: [''],
-    instructions: [{ step: '', details: '' }],
+    instructions: [{}],
     image_url: '',
   });
 
@@ -24,20 +25,24 @@ const AddRecipes = ({ onSubmit }) => {
     setFormData({ ...formData, ingredients: newIngredients });
   };
 
-  const handleInstructionChange = (index, field, value) => {
-    const newInstructions = [...formData.instructions];
-    newInstructions[index][field] = value;
-    setFormData({ ...formData, instructions: newInstructions });
+  const handleInstructionChange = (index, value) => {
+    const newInstructions = { ...formData.instructions[0], [`step${index + 1}`]: value };
+    setFormData({
+      ...formData,
+      instructions: [newInstructions],
+    });
   };
+  
 
   const addIngredient = () => {
     setFormData({ ...formData, ingredients: [...formData.ingredients, ''] });
   };
 
   const addInstruction = () => {
+    const stepNumber = Object.keys(formData.instructions[0] || {}).length + 1;
     setFormData({
       ...formData,
-      instructions: [...formData.instructions, { step: '', details: '' }],
+      instructions: [{ ...formData.instructions[0], [`step${stepNumber}`]: '' }],
     });
   };
 
@@ -47,23 +52,38 @@ const AddRecipes = ({ onSubmit }) => {
     setMessage('');
 
     try {
-      const response = await axios.post('http://127.0.0.1:5376/api/foods/', formData, {
+      // Ensure step keys are properly quoted
+      const formattedInstructions = JSON.parse(JSON.stringify(formData.instructions));
+
+      const formattedData = {
+        ...formData,
+        instructions: formattedInstructions, // Now with properly quoted step keys
+      };
+
+      console.log("Sending Data:", JSON.stringify(formattedData, null, 2));
+
+      const response = await axios.post('http://127.0.0.1:5376/api/foods/', formattedData, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-
-      // Assuming response contains the newly created food data
-      setMessage('Recipe added successfully!');
-      onSubmit(response.data); // If you need to update parent component with new data
+      console.log(response.data.message);
+      
+      setMessage(response.data.message);
+      onSubmit(response.data);
     } catch (error) {
-      if (error.response) {
-        setMessage(`Error: ${error.response.data.message || 'Something went wrong'}`);
-      } else {
-        setMessage('Error: Network or server issue.');
-      }
+      setMessage(
+        error.response ? `Error: ${error.response.data.message || 'Something went wrong'}` : 'Error: Network or server issue.'
+      );
     } finally {
       setIsSubmitting(false);
+      setFormData({
+        name: '',
+        category: '',
+        ingredients: [''],
+        instructions: [{}],
+        image_url: '',
+      })
     }
   };
 
@@ -72,75 +92,42 @@ const AddRecipes = ({ onSubmit }) => {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="name" value={formData.name} onChange={handleChange} required />
         </div>
 
         <div className="form-group">
           <label>Category:</label>
-          <input
-            type="text"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="category" value={formData.category} onChange={handleChange} required />
         </div>
 
         <div className="form-group">
           <label>Ingredients:</label>
           {formData.ingredients.map((ingredient, index) => (
             <div key={index}>
-              <input
-                type="text"
-                value={ingredient}
-                onChange={(e) => handleIngredientChange(index, e.target.value)}
-                required
-              />
+              <input type="text" value={ingredient} onChange={(e) => handleIngredientChange(index, e.target.value)} required />
             </div>
           ))}
-          <button type="button" className="add-button" onClick={addIngredient}>
-            Add Ingredient
-          </button>
+          <button type="button" className="add-button" onClick={addIngredient}>Add Ingredient</button>
         </div>
 
         <div className="form-group">
           <label>Instructions:</label>
-          {formData.instructions.map((instruction, index) => (
+          {Object.keys(formData.instructions[0] || {}).map((key, index) => (
             <div key={index}>
-              <input
-                type="text"
-                placeholder="Step"
-                value={instruction.step}
-                onChange={(e) => handleInstructionChange(index, 'step', e.target.value)}
-                required
-              />
               <textarea
-                placeholder="Details"
-                value={instruction.details}
-                onChange={(e) => handleInstructionChange(index, 'details', e.target.value)}
+                placeholder={`Step ${index + 1}`}
+                value={formData.instructions[0][key]}
+                onChange={(e) => handleInstructionChange(index, e.target.value)}
                 required
               />
             </div>
           ))}
-          <button type="button" className="add-button" onClick={addInstruction}>
-            Add Instruction
-          </button>
+          <button type="button" className="add-button" onClick={addInstruction}>Add Instruction</button>
         </div>
 
         <div className="form-group">
           <label>Image URL (optional):</label>
-          <input
-            type="text"
-            name="image_url"
-            value={formData.image_url}
-            onChange={handleChange}
-          />
+          <input type="text" name="image_url" value={formData.image_url} onChange={handleChange} />
         </div>
 
         <button type="submit" className="submit-button" disabled={isSubmitting}>
@@ -153,6 +140,5 @@ const AddRecipes = ({ onSubmit }) => {
 };
 
 export default AddRecipes;
-
 
  

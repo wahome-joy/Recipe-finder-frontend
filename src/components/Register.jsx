@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Register = () => {
@@ -6,11 +7,11 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate()
 
   const handleRegister = async (e) => {
     e.preventDefault();
   
-    // Prepare the data to send
     const data = { username, email, password };
   
     try {
@@ -23,6 +24,7 @@ const Register = () => {
       
       setMessage(response.data.message);  // Success message from backend
       localStorage.setItem('token', response.data.token);  // Save token in localStorage
+      navigate('/')
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.error);  // Error message from backend

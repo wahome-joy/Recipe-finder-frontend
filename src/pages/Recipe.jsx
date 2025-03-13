@@ -1,95 +1,139 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
-import React from 'react';
+import React from "react";
 
 function Recipe() {
     let params = useParams();
     const [details, setDetails] = useState(null);
-    const [activeTab, setActiveTab] = useState("instructions");
+    const [activeTab, setActiveTab] = useState("ingredients");
 
-useEffect(() => {
-    const fetchDetails = async () => {
-        try {
-            const response = await fetch(
-                `https://api.spoonacular.com/recipes/${params.id}/information?apiKey=${process.env.REACT_APP_API_KEY}`
-            );
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    useEffect(() => {
+        const fetchDetails = async () => {
+            try {
+                const response = await fetch(
+                    `http://127.0.0.1:5376/api/foods/${params.id}`
+                );
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const detailData = await response.json();
+                setDetails(detailData);
+                console.log("Fetched Recipe Details:", detailData);
+            } catch (error) {
+                console.error("Error fetching recipe details:", error);
             }
-            const detailData = await response.json();
-            setDetails(detailData);
-        } catch (error) {
-            console.error("Error fetching recipe details:", error);
+        };
+
+        if (params.id) {
+            fetchDetails();
         }
-    };
+    }, [params.id]);
 
-    if (params.id) {
-        fetchDetails();
+    if (!details) {
+        return <div>Loading...</div>;
     }
-}, [params.id]); // No warning now
 
-if (!details) {
-    return <div>Loading...</div>;
-}
     return (
         <DetailWrapper>
             <div>
-                <h2>{details.title}</h2>
-                <img src={details.image} alt={details.title} />
+                <h2>{details.name}</h2>
+                <img src={details.image_url} alt={details.name} />
             </div>
             <Info>
+                
                 <Button
-                    className={activeTab === 'instructions' ? 'active' : ''}
-                    onClick={() => setActiveTab("instructions")}
-                >
-                    Instructions
-                </Button>
-                <Button
-                    className={activeTab === 'ingredients' ? 'active' : ''}
+                    className={activeTab === "ingredients" ? "active" : ""}
                     onClick={() => setActiveTab("ingredients")}
                 >
                     Ingredients
                 </Button>
-                {activeTab === 'instructions' && (
+
+                <Button
+                    className={activeTab === "instructions" ? "active" : ""}
+                    onClick={() => setActiveTab("instructions")}
+                >
+                    Instructions
+                </Button>
+
+                {/* Instructions Tab */}
+                {activeTab === "instructions" && details.instructions && (
                     <div>
-                        <h3 dangerouslySetInnerHTML={{ __html: details.summary }}></h3>
-                        <h3 dangerouslySetInnerHTML={{ __html: details.instructions }}></h3>
+                        <h3>Instructions:</h3>
+                        {details.instructions.length > 0 ? (
+                            details.instructions.map((stepObj, index) => (
+                                <ul key={index}>
+                                    {Object.values(stepObj).map((step, idx) => (
+                                        <li key={idx}>{step}</li>
+                                    ))}
+                                </ul>
+                            ))
+                        ) : (
+                            <p>No instructions available.</p>
+                        )}
                     </div>
                 )}
-                {activeTab === 'ingredients' && details.extendedIngredients && (
-                    <ul>
-                        {details.extendedIngredients.map((ingredient) => (
-                            <li key={ingredient.id}>{ingredient.original}</li>
-                        ))}
-                    </ul>
+
+                {/* Ingredients Tab */}
+                {activeTab === "ingredients" && details.ingredients && (
+                    <div>
+                        <h3>Ingredients:</h3>
+                        <ul>
+                            {details.ingredients.length > 0 ? (
+                                details.ingredients.map((ingredient, index) => (
+                                    <li key={index}>{ingredient}</li>
+                                ))
+                            ) : (
+                                <p>No ingredients available.</p>
+                            )}
+                        </ul>
+                    </div>
                 )}
             </Info>
         </DetailWrapper>
     );
 }
 
-// Styled components remain the same
-
+// Styled Components
 const DetailWrapper = styled.div`
     margin-top: 10rem;
     margin-bottom: 5rem;
     display: flex;
-    .active{
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .active {
         background: linear-gradient(35deg, #494949, #313131);
         color: #fff;
     }
-    h2{
+    
+    h2 {
         margin-bottom: 2rem;
     }
-    li{
+
+    img {
+        width: 400px;
+        height: auto;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        box-shadow: 0 0 20px
+    }
+   
+
+    li {
         font-size: 1.2rem;
-        line-height: 2.5rem;
+        line-height: 2rem;
+        margin: 7px
+
     }
-    ul{
-        margin-top: 2rem;
+
+    ul {
+        margin-top: 1rem;
+        padding: 0;
     }
-`
+`;
+
 const Button = styled.button`
     padding: 1rem 2rem;
     color: #313131;
@@ -97,9 +141,17 @@ const Button = styled.button`
     border: 2px solid black;
     margin-right: 2rem;
     font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        background: #f8f8f8;
+    }
 `
+
 const Info = styled.div`
-margin-left: 10rem;
-`
+    margin-top: 2rem;
+    text-align: left;
+    width: 60%;
+`;
 
 export default Recipe;

@@ -12,18 +12,27 @@ function Popular() {
     }, []);
 
     const getPopular = async () => {
-        const check = localStorage.getItem('popular')
-
-        if (check) {
-            setPopular(JSON.parse(check));
-        } else {
-            const api = await fetch(`https://api.spoonacular.com/recipes/random?apiKey=${process.env.REACT_APP_API_KEY}&number=9`);
-            const data = await api.json();
-            localStorage.setItem('popular', JSON.stringify(data.recipes));
-            setPopular(data.recipes)
-            console.log(data.recipes);
+        try {
+            const response = await fetch(`http://127.0.0.1:5376/api/foods/popular`);
+            const data = await response.json();
+    
+            console.log("API Response:", data); // Debugging log
+    
+            // Ensure data is an array (modify based on actual API response)
+            if (!data || !Array.isArray(data)) {
+                console.error("Invalid API response:", data);
+                setPopular([]); // Prevents UI crashes
+                return;
+            }
+    
+            setPopular(data); // Directly set the API data
+        } catch (error) {
+            console.error("Error fetching popular recipes:", error);
+            setPopular([]); // Handles fetch failure
         }
-    }
+    };
+    
+    
 
     return (
         <div>
@@ -41,8 +50,8 @@ function Popular() {
                             <SplideSlide key={recipe.id}>
                                 <Card>
                                     <Link to={"/recipe/" + recipe.id}>
-                                        <p>{recipe.title}</p>
-                                        <img src={recipe.image} alt={recipe.title} />
+                                        <p>{recipe.name}</p>
+                                        <img src={recipe.image_url} alt={recipe.name} />
                                         <Gradient />
                                     </Link>
                                 </Card>
