@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Register = () => {
+const Register = ({setIsLoggedIn}) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,6 +24,8 @@ const Register = () => {
       
       setMessage(response.data.message);  // Success message from backend
       localStorage.setItem('token', response.data.token);  // Save token in localStorage
+      localStorage.setItem('username', response.data.user.username)
+      setIsLoggedIn(true)
       navigate('/')
     } catch (error) {
       if (error.response) {
@@ -162,4 +164,3 @@ const Register = () => {
 };
 
 export default Register;
-

@@ -17,7 +17,7 @@ function Pages({isLoggedIn,setIsLoggedIn}) {
                 <Route path="/cuisine/:category" element={<Cuisine />} />
                 <Route path="/searched/:search" element={<Searched />} />
                 <Route path="/recipe/:id" element={<Recipe />} />
-                <Route path="/register" element={<Register />} />
+                <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
                 <Route path="/login" element={isLoggedIn ? <Home />:<Login setIsLoggedIn={setIsLoggedIn}/>} /> 
                 <Route path="/addrecipes" element={isLoggedIn ? <AddRecipes /> : < Login setIsLoggedIn={setIsLoggedIn}/>} />
             </Routes>

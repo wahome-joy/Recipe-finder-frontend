@@ -10,9 +10,9 @@ function Category() {
                 <FaPizzaSlice />
                 <h4>African</h4>
             </SLink>
-            <SLink to={"/cuisine/popular"}>
+            <SLink to={"/cuisine/Dessert"}>
                 <FaHamburger />
-                <h4>Popular</h4>
+                <h4>Dessert</h4>
             </SLink>
             <SLink to={"/cuisine/Vegetarian"}>
                 <GiNoodles />
